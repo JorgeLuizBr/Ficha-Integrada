@@ -1,0 +1,221 @@
+import React, { useRef } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent } from "@/components/ui/card";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { Checkbox } from "@/components/ui/checkbox";
+import html2pdf from "html2pdf.js";
+
+const colors = {
+  verde: "#4CAF50",
+  amarelo: "#FFC107",
+  vermelho: "#F44336",
+};
+
+const dataCores = [
+  { name: "Verde", value: 33.3, color: colors.verde },
+  { name: "Amarelo", value: 33.3, color: colors.amarelo },
+  { name: "Vermelho", value: 33.3, color: colors.vermelho },
+];
+
+export default function FichaIntegrada() {
+  const pdfRef = useRef();
+
+  const gerarPDF = () => {
+    const element = pdfRef.current;
+    const opt = {
+      margin: 0.5,
+      filename: Ficha_Integrada_${new Date().toISOString().slice(0, 10)}.pdf,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+
+  const gerarPrompt = () => {
+    const prompt = `
+Atue como uma equipe multidisciplinar de saúde.
+Avalie o seguinte perfil de cliente com base em:
+- Dados de identificação
+- Avaliação física, nutricional, psicológica, funcional, estética e holística
+- Objetivo do cliente
+- Sistema de cores de risco (verde, amarelo, vermelho)
+Analise e cruze os dados com base na medicina ocidental e oriental.
+Retorne alertas e sugestões para os seguintes prazos:
+- Curto prazo (0-12 meses)
+- Médio prazo (12-72 meses)
+- Longo prazo (72-120 meses)
+    `;
+    navigator.clipboard.writeText(prompt);
+    alert("Prompt copiado! Acesse o ChatGPT ou Gemini e cole para análise.");
+  };
+
+  return (
+    <div className="p-4">
+      <div className="mb-4 text-right">
+        <Button onClick={gerarPDF} className="bg-blue-600 text-white hover:bg-blue-700">
+          Gerar PDF da Ficha Completa
+        </Button>
+      </div>
+
+      <div ref={pdfRef} id="conteudo-pdf">
+        <Tabs defaultValue="identificacao">
+          <TabsList className="grid w-full grid-cols-10">
+            <TabsTrigger value="identificacao">Identificação</TabsTrigger>
+            <TabsTrigger value="avaliacao">Avaliação Física</TabsTrigger>
+            <TabsTrigger value="nutricao">Nutrição</TabsTrigger>
+            <TabsTrigger value="psicologia">Psicologia / FIB</TabsTrigger>
+            <TabsTrigger value="fisioterapia">Funcional / Fisioterapia</TabsTrigger>
+            <TabsTrigger value="holisticas">Terapias Holísticas</TabsTrigger>
+            <TabsTrigger value="estetica">Estética Corporal</TabsTrigger>
+            <TabsTrigger value="fotos">Fotos</TabsTrigger>
+            <TabsTrigger value="grafico">Gráficos</TabsTrigger>
+            <TabsTrigger value="ia">Análise Inteligente</TabsTrigger>
+          </TabsList>
+
+          {/* Abas */}
+          <TabsContent value="identificacao">
+            <Card><CardContent className="space-y-4 pt-4">
+              <Input placeholder="Nome completo" />
+              <Input placeholder="Idade" type="number" />
+              <Input placeholder="Profissão" />
+              <Input placeholder="Email" type="email" />
+              <Input placeholder="Telefone para contato" />
+              <Textarea placeholder="Como nos conheceu?" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="avaliacao">
+            <Card><CardContent className="space-y-6 pt-4">
+              <Textarea placeholder="Descreva o histórico de atividade física do cliente." />
+              <RadioCores id="1" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="nutricao">
+            <Card><CardContent className="space-y-6 pt-4">
+              <Textarea placeholder="Descreva os hábitos alimentares do cliente." />
+              <RadioCores id="2" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="psicologia">
+            <Card><CardContent className="space-y-6 pt-4">
+              <Textarea placeholder="Relato emocional do cliente (rotina, família, expectativas, etc.)" />
+              <Input type="number" placeholder="Autoestima pessoal (1 a 5)" min={1} max={5} />
+              <Input type="number" placeholder="Autoestima profissional (1 a 5)" min={1} max={5} />
+              <Input type="number" placeholder="Horas de lazer por semana" min={0} />
+              <Input type="text" placeholder="Você realiza trabalho voluntário? Qual?" />
+              <Textarea placeholder="Quais hobbies ou dons artísticos o cliente possui?" />
+              <Textarea placeholder="Considerações do profissional de psicologia (se houver)" />
+              <RadioCores id="3" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="fisioterapia">
+            <Card><CardContent className="space-y-6 pt-4">
+              <h2 className="text-lg font-semibold">Testes Funcionais</h2>
+              <Textarea placeholder="Equilíbrio unipodal (D/E)" />
+              <Textarea placeholder="Sentar e levantar do chão" />
+              <Textarea placeholder="Agachamento (amplitude e eixo)" />
+              <Textarea placeholder="Marcha estacionária (10 seg)" />
+              <Textarea placeholder="Reflexo com toque leve" />
+              <Textarea placeholder="Alcance frontal (deslocamento)" />
+              <h2 className="text-lg font-semibold">Fotos 360° (com tapete)</h2>
+              {[...Array(8)].map((_, i) => (
+                <Input key={i} type="file" accept="image/*" placeholder={Foto Ângulo ${i * 45}°} />
+              ))}
+              <RadioCores id="4" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="holisticas">
+            <Card><CardContent className="space-y-6 pt-4">
+              <h2 className="text-lg font-semibold">Terapias Complementares</h2>
+              <div className="flex flex-col space-y-2">
+                {["Reiki", "Aromaterapia", "Meditação Guiada", "Acupuntura"].map((t, i) => (
+                  <label key={i} className="flex items-center space-x-2">
+                    <Checkbox id={terapia${i}} />
+                    <span>{t}</span>
+                  </label>
+                ))}
+              </div>
+              <Textarea placeholder="Observações ou proposta personalizada de terapia complementar" />
+              <RadioCores id="5" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="estetica">
+            <Card><CardContent className="space-y-6 pt-4">
+              <h2 className="text-lg font-semibold">Avaliação Estética</h2>
+              <Textarea placeholder="Observações gerais: flacidez, gordura localizada, estrias..." />
+              <Input placeholder="Tipo de gordura (Compacta, Flácida)" />
+              <Input placeholder="Distribuição da gordura (Localizada / Generalizada)" />
+              <Input placeholder="Biotipo (Ginóide / Andróide / Normolíneo)" />
+              <Textarea placeholder="Localização da flacidez (tissular / muscular)" />
+              <Input placeholder="Tipo e grau da celulite" />
+              <Input placeholder="Presença de dor à palpação?" />
+              <Input placeholder="Cor da estria" />
+              <Input placeholder="Quantidade e região de estrias" />
+              <Textarea placeholder="Observações adicionais da profissional de estética" />
+              <RadioCores id="6" />
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="fotos">
+            <Card><CardContent className="grid gap-4 pt-4">
+              {[...Array(8)].map((_, i) => (
+                <Input key={i} type="file" accept="image/*" placeholder={Foto Antes ${i + 1}} />
+              ))}
+              {[...Array(8)].map((_, i) => (
+                <Input key={i + 8} type="file" accept="image/*" placeholder={Foto Depois ${i + 1}} />
+              ))}
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="grafico">
+            <Card><CardContent className="pt-4 h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={dataCores} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                    {dataCores.map((entry, index) => (
+                      <Cell key={cell-${index}} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent></Card>
+          </TabsContent>
+
+          <TabsContent value="ia">
+            <Card><CardContent className="space-y-6 pt-4">
+              <h2 className="text-lg font-semibold">Análise Inteligente com IA</h2>
+              <p>Copie as informações e cole no ChatGPT ou Gemini para gerar uma análise multidisciplinar.</p>
+              <Button onClick={gerarPrompt} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                Copiar Análise Inteligente para IA
+              </Button>
+            </CardContent></Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+function RadioCores({ id }) {
+  return (
+    <RadioGroup defaultValue="amarelo" className="flex gap-6">
+      {["verde", "amarelo", "vermelho"].map((cor) => (
+        <div key={cor} className="flex items-center space-x-2">
+          <RadioGroupItem value={cor} id={${cor}${id}} />
+          <label htmlFor={${cor}${id}} className={text-${cor}-600 capitalize}>{cor}</label>
+        </div>
+      ))}
+    </RadioGroup>
+  );
+}
